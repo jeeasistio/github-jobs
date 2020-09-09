@@ -23,6 +23,11 @@ const reducer = (state, action) => {
         ...state, jobs: [], loading: false, error: action.payload.error
       }
       break;
+    case 'CHECK_NEXT_PAGE':
+      return {
+        ...state, hasNextPage: action.payload.hasNextPage
+      }
+      break;
     default:
       return state;
       break;
@@ -34,25 +39,36 @@ const useFetchJobs = (params, page) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   useEffect(() => {
-    const cancelToken = axios.CancelToken.source();
     dispatch({ type: 'MAKE_REQUEST' });
     axios
       .get('https://cors-anywhere.herokuapp.com/https://jobs.github.com/positions.json', {
-        markdown: true,
-        page,
-        ...params
+        params: {
+          markdown: false,
+          page,
+          ...params
+        }
       })
       .then(res => {
         dispatch({ type: 'GET_DATA', payload: { fetchedJobs: res.data } })
       })
       .catch(err => {
-        if (axios.isCancel(err)) return;
         dispatch({ type: 'ERROR', payload: { error: err } })
       })
       
-      return () => {
-        cancelToken.cancel;
-      }
+    axios
+      .get('https://cors-anywhere.herokuapp.com/https://jobs.github.com/positions.json', {
+        params: {
+          markdown: false,
+          page: page + 1,
+          ...params
+        }
+      })
+      .then(res => {
+        dispatch({ type: 'CHECK_NEXT_PAGE', payload: { hasNextPage: res.data.length !== 0 } })
+      })
+      .catch(err => {
+        dispatch({ type: 'ERROR', payload: { error: err } })
+      })
   }, [params, page])
   
   return state;

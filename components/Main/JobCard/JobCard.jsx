@@ -20,9 +20,9 @@ const JobCard = ({ job }) => {
     <Card className="my-2">
       <Card.Body>
         <div>
-          <div className="d-flex w-100 align-items-center justify-content-between">
-            <Card.Title>{title}</Card.Title>
-            <div className="d-none d-sm-block">
+          <div className="d-flex w-100 justify-content-between align-items-center mb-2">
+            <Card.Title className="m-0">{title}</Card.Title>
+            <div className="d-none d-sm-block ml-2">
               <img src={logo} height="50" />
             </div>
           </div>
@@ -32,12 +32,15 @@ const JobCard = ({ job }) => {
           <p className="text-secondary">{location}</p>
           {parse(contact)}
         </div>
-        <Button 
-          variant={detailsIsOpen ? 'secondary': 'primary'} 
-          onClick={() => setDetailsIsOpen(!detailsIsOpen)}
-        >
-            {detailsIsOpen ? 'Hide' : 'Show'} Details
-        </Button>
+        <div className="d-flex w-100 justify-content-between align-items-center">
+          <Button 
+            variant={detailsIsOpen ? 'secondary': 'dark'} 
+            onClick={() => setDetailsIsOpen(!detailsIsOpen)}
+          >
+              {detailsIsOpen ? 'Hide' : 'Show'} Details
+          </Button>
+          <p className="m-0 text-secondary">{new Date(date).toLocaleDateString()}</p>
+        </div>
         <Collapse in={detailsIsOpen}>
           <div className="mt-3">
             {parse(description)}
