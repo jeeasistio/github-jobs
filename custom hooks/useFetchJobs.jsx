@@ -40,37 +40,31 @@ const useFetchJobs = (params, page) => {
 
   useEffect(() => {
     dispatch({ type: 'MAKE_REQUEST' });
-    axios
-      .get('https://cors-anywhere.herokuapp.com/https://jobs.github.com/positions.json', {
-        params: {
-          markdown: false,
-          page,
-          ...params
-        }
-      })
-      .then(res => {
-        dispatch({ type: 'GET_DATA', payload: { fetchedJobs: res.data } })
-      })
+    axios.all([
+        axios.get('https://cors-anywhere.herokuapp.com/https://jobs.github.com/positions.json', {
+          params: {
+            markdown: false,
+            page,
+            ...params
+          }
+        }),
+        axios.get('https://cors-anywhere.herokuapp.com/https://jobs.github.com/positions.json', {
+          params: {
+            markdown: false,
+            page: page + 1,
+            ...params
+          }
+        })
+      ])
+      .then(axios.spread((res, nextRes, nextnextRes) => {
+        dispatch({ type: 'GET_DATA', payload: { fetchedJobs: res.data } });
+        dispatch({ type: 'CHECK_NEXT_PAGE', payload: { hasNextPage: nextRes.data.length !== 0 } });
+      }))
       .catch(err => {
-        dispatch({ type: 'ERROR', payload: { error: err } })
-      })
-      
-    axios
-      .get('https://cors-anywhere.herokuapp.com/https://jobs.github.com/positions.json', {
-        params: {
-          markdown: false,
-          page: page + 1,
-          ...params
-        }
-      })
-      .then(res => {
-        dispatch({ type: 'CHECK_NEXT_PAGE', payload: { hasNextPage: res.data.length !== 0 } })
-      })
-      .catch(err => {
-        dispatch({ type: 'ERROR', payload: { error: err } })
+        dispatch({ type: 'ERROR', payload: { error: err[0] } })
       })
   }, [params, page])
-  
+
   return state;
 }
 
